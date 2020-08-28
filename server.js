@@ -1,6 +1,11 @@
 const express = require('express');
 const app = express();
 
+//const bodyParser = require('body-parser');
+//app.use(bodyParser.json());
+
+const morgan = require('morgan');
+app.use(morgan('tiny'));
 const { quotes } = require('./data');
 const { getRandomElement } = require('./utils');
 
@@ -10,25 +15,32 @@ app.use(express.static('public'));
 
 app.get('/quotes/random', (req,res,next) => {
    const quote = getRandomElement(quotes);
-   res.status(200).send(quote);
+   res.status(200).send({
+       quote: quote
+   });
 });
 
 app.get('/quotes/all', (req,res,next) => {
-    res.status(200).send(quotes);
+    res.status(200).send({
+        quotes : quotes
+    });
  });
 
  app.get('/quotes/author/:name', (req,res,next) => {
-    const auth = req.params.name;
-    let thisQuote = undefined;
+    const author = req.params.name;
+    let thisQuote = null;
     quotes.forEach((quote) => {
-        if(quote.person === auth) {thisQuote = quote;}
-    });
-
-        if(thisQuote){
-            res.status(200).send(thisQuote);
-        } else {
-            res.status(404).send("Author Not Found");
+        if(quote.person === author) {
+            thisQuote = quote;
         }
+    });
+    if(thisQuote !== null) {
+        res.status(200).send({
+            quote: thisQuote
+        });
+    } else {
+        res.status(404).send("Author Not Found");
+    }
  });
 
 app.post('/quotes/new', (req,res,next) => {
